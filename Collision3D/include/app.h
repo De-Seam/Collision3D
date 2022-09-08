@@ -9,6 +9,7 @@ class App
 public:
 	static void init();
 
+	static Camera3D get_camera() { return m_camera; }
 private:
 	static void main_loop();
 	static void update(float dt);

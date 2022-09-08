@@ -36,6 +36,9 @@
     <ClCompile Include="src\collisions\functions\aabb_sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\collisions\functions\model_model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\include\raylib\config.h">

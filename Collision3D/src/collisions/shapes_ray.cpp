@@ -1,5 +1,7 @@
 #include "collision/shapes.h"
 
+#include "app.h"
+
 bool SphereShape::hits_ray(fm::Ray ray, float& max_distance)
 {
 	fm::vec3 m = ray.origin - m_position;
@@ -67,5 +69,21 @@ bool AABBShape::hits_ray(fm::Ray ray, float& max_distance)
 		max_distance = tmin;
 		return true; 
 	}
+	return false;
+}
+
+bool ModelShape::hits_ray(fm::Ray ray, float& max_distance)
+{
+	Ray rl_ray;
+	rl_ray.position = {ray.origin.x, ray.origin.y, ray.origin.z};
+	rl_ray.direction = {ray.direction.x, ray.direction.y, ray.direction.z};
+	
+	RayCollision ray_c = GetRayCollisionModel(GetMouseRay(GetMousePosition(), App::get_camera()), m_model);
+	if(ray_c.hit && ray_c.distance < max_distance)
+	{
+		max_distance = ray_c.distance;
+		return true;
+	}
+
 	return false;
 }

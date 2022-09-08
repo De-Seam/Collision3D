@@ -1,6 +1,8 @@
 #pragma once
 #include "utils/math.h"
 
+#include <raylib/raylib.h>
+
 namespace fm
 {
 	struct Ray
@@ -20,7 +22,7 @@ enum class ShapeType
 	Invalid,
 	Sphere,
 	AABB,
-	Cube
+	Model
 };
 
 struct Shape
@@ -66,4 +68,23 @@ struct AABBShape : public Shape
 
 	fm::vec3 m_size;
 
+};
+
+struct ModelShape : public Shape
+{
+	ModelShape(const std::string& file, fm::vec3 position, fm::vec3 scale, fm::vec3 rotation)
+	{
+		m_type = ShapeType::Model;
+		m_model = LoadModel(file.c_str());
+		m_position = position;
+		m_scale = scale;
+		m_rotation = rotation;
+	}
+
+	virtual void draw() override;
+	virtual bool hits_ray(fm::Ray ray, float& max_distance) override;
+
+	Model m_model;
+	fm::vec3 m_scale;
+	fm::vec3 m_rotation;
 };

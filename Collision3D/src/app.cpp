@@ -29,6 +29,9 @@ void App::init()
 	m_shapes.push_back(new AABBShape({5.f,0.f,0.f}, {2.f, 2.f, 2.f}));
 	m_shapes.push_back(new AABBShape({5.f,3.f,0.f}, {2.f, 2.f, 2.f}));
 
+	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{10.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
+	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{20.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
+
 	main_loop();
 
 	CloseWindow();
@@ -125,6 +128,9 @@ void App::detect_collisions()
 				detect_collision(static_cast<AABBShape*>(m_shapes[i]), static_cast<SphereShape*>(m_shapes[j]));
 			else if(type0 == ShapeType::Sphere && type1 == ShapeType::AABB)
 				detect_collision(static_cast<AABBShape*>(m_shapes[j]), static_cast<SphereShape*>(m_shapes[i]));
+			
+			else if(type0 == ShapeType::Model && type1 == ShapeType::Model)
+				detect_collision(static_cast<ModelShape*>(m_shapes[j]), static_cast<ModelShape*>(m_shapes[i]));
 		}
 	}
 }

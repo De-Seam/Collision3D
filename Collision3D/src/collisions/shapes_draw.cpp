@@ -20,3 +20,10 @@ void AABBShape::draw()
 	DrawCubeWiresV(to_rl(m_position),
 		to_rl(m_size), color);
 }
+
+void ModelShape::draw()
+{
+	Color color = m_collision_count <= 0 ? g_collision_color_non : g_collision_color_hit;
+	DrawModelWiresEx(m_model, to_rl(m_position), to_rl(m_rotation), 0.f, to_rl(m_scale), color);
+}
+
