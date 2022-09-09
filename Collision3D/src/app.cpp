@@ -30,7 +30,7 @@ void App::init()
 	m_shapes.push_back(new AABBShape({5.f,3.f,0.f}, {2.f, 2.f, 2.f}));
 
 	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{10.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
-	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{20.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
+	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{13.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
 
 	main_loop();
 

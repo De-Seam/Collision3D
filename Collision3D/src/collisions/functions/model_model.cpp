@@ -11,6 +11,8 @@ void detect_collision(ModelShape* a, ModelShape* b)
 		int index = (i+1)%vert_count_a;
 		fm::vec3 next = {a->m_model.meshes[0].vertices[index], a->m_model.meshes[0].vertices[index+1], a->m_model.meshes[0].vertices[index+2]};
 		fm::vec3 edge = next - current;
+		edge *= a->m_scale;
+		//edge += a->m_position;
 
 		fm::vec3 axis;
 		axis[0] = -edge[1];
@@ -24,6 +26,8 @@ void detect_collision(ModelShape* a, ModelShape* b)
 		for(size_t j = 0; j < vert_count_a; j+=3)
 		{
 			fm::vec3 v = {a->m_model.meshes[0].vertices[j], a->m_model.meshes[0].vertices[j+1], a->m_model.meshes[0].vertices[j+2]};
+			v*= a->m_scale;
+			v+=a->m_position;
 			float proj = axis.dot(v);
 
 			if(proj < a_min_proj)
@@ -35,18 +39,22 @@ void detect_collision(ModelShape* a, ModelShape* b)
 		for(size_t j = 0; j < vert_count_b; j+=3)
 		{
 			fm::vec3 v = {b->m_model.meshes[0].vertices[j], b->m_model.meshes[0].vertices[j+1], b->m_model.meshes[0].vertices[j+2]};
+			v*=b->m_scale;
+			v+=b->m_position;
 			float proj = axis.dot(v);
 
-			if(proj < a_min_proj)
-				a_min_proj = proj;
-			if(proj > a_max_proj)
-				a_max_proj = proj;
+			if(proj < b_min_proj)
+				b_min_proj = proj;
+			if(proj > b_max_proj)
+				b_max_proj = proj;
 		}
 
 		if(a_max_proj < b_min_proj || a_min_proj > b_max_proj)
 		{
-			a->add_collision();
-			b->add_collision();
+			return; //No intersection
 		}
 	}
+	//At this point we're sure there's an intersection
+	a->add_collision();
+	b->add_collision();
 }
