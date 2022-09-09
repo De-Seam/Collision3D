@@ -1,7 +1,7 @@
 #pragma once
 #include "collision/shapes.h"
 
-#include <raylib/raylib_o.h>
+#include <raylib/raylib.h>
 
 #include <vector>
 class App

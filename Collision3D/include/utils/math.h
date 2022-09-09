@@ -394,9 +394,32 @@ namespace fm //Fast Math
 		}
 	};
 
+	inline vec2 normalize(const vec2& i)
+	{
+		float mag = std::sqrtf(i.x * i.x + i.y * i.y);
+		assert(mag != 0.f && "Try using normalize_safe instead");
+		return { i.x / mag, i.y / mag };
+	}
+
+
+	inline vec2 normalize_safe(const vec2& i)
+	{
+		float mag = std::sqrtf(i.x * i.x + i.y * i.y);
+		if (mag == 0.f)
+			mag = 1.f;
+		return { i.x / mag, i.y / mag };
+	}
+
+	inline vec3 normalize(const vec3& i)
+	{
+		float mag = std::sqrtf(i.x * i.x + i.y * i.y + i.z * i.z);
+		assert(mag != 0.f && "Try using normalize_safe instead");
+		return { i.x / mag, i.y / mag, i.z / mag };
+	}
+
 	inline mat4 translate(mat4 matrix, vec3 vector)
 	{
-		matrix.w = matrix.w.x * vector.x + matrix.w.y * vector.y + matrix.w.z * vector.z + matrix.w.w;
+		matrix.w = matrix.x * vector.x + matrix.y * vector.y + matrix.z * vector.z + matrix.w;
 		return matrix;
 	}
 
@@ -406,6 +429,36 @@ namespace fm //Fast Math
 		matrix[1] = matrix[1] * vector[1];
 		matrix[2] = matrix[2] * vector[2];
 		return matrix;
+	}
+
+	inline mat4 rotate(mat4 m, float angle, vec3 v)
+	{
+		float const a = angle;
+		float const c = cos(a);
+		float const s = sin(a);
+
+		vec3 axis(normalize(v));
+		vec3 temp(axis * (1.f - c));
+
+		mat4 Rotate;
+		Rotate[0][0] = c + temp[0] * axis[0];
+		Rotate[0][1] = temp[0] * axis[1] + s * axis[2];
+		Rotate[0][2] = temp[0] * axis[2] - s * axis[1];
+
+		Rotate[1][0] = temp[1] * axis[0] - s * axis[2];
+		Rotate[1][1] = c + temp[1] * axis[1];
+		Rotate[1][2] = temp[1] * axis[2] + s * axis[0];
+
+		Rotate[2][0] = temp[2] * axis[0] + s * axis[1];
+		Rotate[2][1] = temp[2] * axis[1] - s * axis[0];
+		Rotate[2][2] = c + temp[2] * axis[2];
+
+		mat4 Result;
+		Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
+		Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
+		Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
+		Result[3] = m[3];
+		return Result;
 	}
 
 	inline mat4 get_perspective(float fovy, float aspect, float znear, float zfar)
@@ -453,22 +506,6 @@ namespace fm //Fast Math
 	inline mat4 to_mat4(const quat& q)
 	{
 		return mat4(to_mat3(q));
-	}
-
-	inline vec2 normalize(const vec2& i)
-	{
-		float mag = std::sqrtf(i.x * i.x + i.y * i.y);
-		assert(mag != 0.f && "Try using normalize_safe instead");
-		return { i.x / mag, i.y / mag };
-	}
-
-
-	inline vec2 normalize_safe(const vec2& i)
-	{
-		float mag = std::sqrtf(i.x * i.x + i.y * i.y);
-		if (mag == 0.f)
-			mag = 1.f;
-		return { i.x / mag, i.y / mag };
 	}
 
 	inline quat normalize(const quat& q)

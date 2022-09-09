@@ -77,8 +77,10 @@ bool ModelShape::hits_ray(fm::Ray ray, float& max_distance)
 	Ray rl_ray;
 	rl_ray.position = {ray.origin.x, ray.origin.y, ray.origin.z};
 	rl_ray.direction = {ray.direction.x, ray.direction.y, ray.direction.z};
-	
-	RayCollision ray_c = GetRayCollisionModel(GetMouseRay(GetMousePosition(), App::get_camera()), m_model);
+
+	//memcpy(&rl_transform, &model_matrix, sizeof(fm::mat4));
+
+	RayCollision ray_c = GetRayCollisionMesh(rl_ray, m_model.meshes[0], m_model.transform);
 	if(ray_c.hit && ray_c.distance < max_distance)
 	{
 		max_distance = ray_c.distance;
