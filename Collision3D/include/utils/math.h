@@ -127,7 +127,10 @@ namespace fm //Fast Math
 
 		[[nodiscard]] vec3 cross(const vec3& i) const
 		{
-			return vec3(y * i.z - z * i.y, z * i.x - x * i.x, x * i.y - y * i.x);
+			return vec3(
+				y * i.z - z * i.y, 
+				z * i.x - x * i.z, 
+				x * i.y - y * i.x);
 		}
 	};
 
