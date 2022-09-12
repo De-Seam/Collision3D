@@ -10,5 +10,5 @@ It currently includes the following detection methods:
 - Model-Sphere using GJK
 - Model-AABB using GJK
 
-##Use
+## Use
 To use simply download the files and open the "Collision3D.sln" file. It requires Visual Studio to run.
