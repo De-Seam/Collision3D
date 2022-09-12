@@ -104,6 +104,8 @@ namespace fm //Fast Math
 		const vec3& operator /= (const vec3& i) { return *this = *this / i; }
 		const vec3& operator /= (const float i) { return *this = *this / i; }
 
+		bool operator==(const vec3& i) { return x == i.x && y == i.y && z == i.z;}
+
 		[[nodiscard]] uint32_t get_argb() const
 		{
 			const float t_r = clamp<float>(x, 0, 1);

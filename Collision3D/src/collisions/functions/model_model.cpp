@@ -58,7 +58,7 @@ bool sat_intersect(ModelShape* a, ModelShape* b)
 	return true;
 }
 
-fm::vec3 find_furthest_point(ModelShape* model, fm::vec3 direction)
+fm::vec3 find_furthest_point_model(ModelShape* model, fm::vec3 direction)
 {
 	int vert_count = model->m_model.meshes[0].vertexCount;
 	fm::vec3 max_point;
@@ -80,9 +80,19 @@ fm::vec3 find_furthest_point(ModelShape* model, fm::vec3 direction)
 	return max_point;
 }
 
-fm::vec3 support(ModelShape* a, ModelShape* b, fm::vec3 direction)
+fm::vec3 find_furthest_point_sphere(SphereShape* sphere, fm::vec3 direction)
 {
-	return find_furthest_point(a, direction) - find_furthest_point(b, -direction);
+	return sphere->m_position + fm::normalize(direction) * sphere->m_radius;
+}
+
+fm::vec3 support_model_model(ModelShape* a, ModelShape* b, fm::vec3 direction)
+{
+	return find_furthest_point_model(a, direction) - find_furthest_point_model(b, -direction);
+}
+
+fm::vec3 support_model_sphere(ModelShape* a, SphereShape* b, fm::vec3 direction)
+{
+	return find_furthest_point_model(a, direction) - find_furthest_point_sphere(b, -direction);
 }
 
 #include <array>
@@ -245,13 +255,13 @@ bool gjk_intersect(ModelShape* a, ModelShape* b)
 {
 	Simplex simplex;
 
-	fm::vec3 s = support(a, b, fm::vec3{1.f,0.f,0.f});
+	fm::vec3 s = support_model_model(a, b, fm::vec3{1.f,0.f,0.f});
 	simplex.push_front(s);
 	fm::vec3 direction = -s;
 
 	while(true)
 	{
-		s = support(a, b, direction);
+		s = support_model_model(a, b, direction);
 		if(s.dot(direction) <= 0.f) //No collision
 		{
 			return false;
@@ -272,5 +282,35 @@ void detect_collision(ModelShape* a, ModelShape* b)
 	{
 		a->add_collision();
 		b->add_collision();
+	}
+}
+
+
+void detect_collision(ModelShape* model, SphereShape* sphere)
+{
+	//GJK
+
+	Simplex simplex;
+
+	fm::vec3 s = support_model_sphere(model, sphere, fm::vec3{1.f,0.f,0.f});
+	simplex.push_front(s);
+	fm::vec3 direction = -s;
+
+	while(true)
+	{
+		s = support_model_sphere(model, sphere, direction);
+		if(s.dot(direction) <= 0.f) //No collision
+		{
+			return;
+		}
+
+		simplex.push_front(s);
+
+		if(next_simplex(simplex, direction))
+		{
+			model->add_collision();
+			sphere->add_collision();
+			return;
+		}
 	}
 }
