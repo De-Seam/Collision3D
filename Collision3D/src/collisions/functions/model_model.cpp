@@ -85,6 +85,43 @@ fm::vec3 find_furthest_point_sphere(SphereShape* sphere, fm::vec3 direction)
 	return sphere->m_position + fm::normalize(direction) * sphere->m_radius;
 }
 
+#include <array>
+
+fm::vec3 find_furthest_point_aabb(AABBShape* aabb_shape, fm::vec3 direction)
+{
+	//int vert_count = model->m_model.meshes[0].vertexCount;
+	fm::vec3 max_point;
+	float max_distance = -INFINITY;
+
+	fm::AABB aabb = aabb_shape->get_aabb();
+	fm::vec3 size = aabb.max - aabb.min;
+
+	std::array<fm::vec3, 8> vertices
+	{
+		aabb.min, //0,0,0
+		aabb.min + fm::vec3{size.x, 0, 0}, //1,0,0
+		aabb.min + fm::vec3{size.x, 0, size.z}, //1,0,1
+		aabb.min + fm::vec3{0, 0, size.z}, //0,0,1
+		aabb.min + fm::vec3{0, size.y, size.z}, //0,1,1
+		aabb.max,//1,1,1
+		aabb.min + fm::vec3{size.x, size.y, 0}, //1,1,0
+		aabb.min + fm::vec3{0, size.y, 0}, //0,1,1
+	};
+
+	for(int i = 0; i < 8; i++)
+	{
+		fm::vec3 vertex = vertices[i];
+		float distance = vertex.dot(direction);
+		if(distance > max_distance)
+		{
+			max_distance = distance;
+			max_point = vertex;
+		}
+	}
+
+	return max_point;
+}
+
 fm::vec3 support_model_model(ModelShape* a, ModelShape* b, fm::vec3 direction)
 {
 	return find_furthest_point_model(a, direction) - find_furthest_point_model(b, -direction);
@@ -95,7 +132,10 @@ fm::vec3 support_model_sphere(ModelShape* a, SphereShape* b, fm::vec3 direction)
 	return find_furthest_point_model(a, direction) - find_furthest_point_sphere(b, -direction);
 }
 
-#include <array>
+fm::vec3 support_model_aabb(ModelShape* a, AABBShape* b, fm::vec3 direction)
+{
+	return find_furthest_point_model(a, direction) - find_furthest_point_aabb(b, -direction);
+}
 
 struct Simplex {
 	private:
@@ -289,7 +329,6 @@ void detect_collision(ModelShape* a, ModelShape* b)
 void detect_collision(ModelShape* model, SphereShape* sphere)
 {
 	//GJK
-
 	Simplex simplex;
 
 	fm::vec3 s = support_model_sphere(model, sphere, fm::vec3{1.f,0.f,0.f});
@@ -310,6 +349,34 @@ void detect_collision(ModelShape* model, SphereShape* sphere)
 		{
 			model->add_collision();
 			sphere->add_collision();
+			return;
+		}
+	}
+}
+
+void detect_collision(ModelShape* model, AABBShape* aabb)
+{
+	//GJK
+	Simplex simplex;
+
+	fm::vec3 s = support_model_aabb(model, aabb, fm::vec3{1.f,0.f,0.f});
+	simplex.push_front(s);
+	fm::vec3 direction = -s;
+
+	while(true)
+	{
+		s = support_model_aabb(model, aabb, direction);
+		if(s.dot(direction) <= 0.f) //No collision
+		{
+			return;
+		}
+
+		simplex.push_front(s);
+
+		if(next_simplex(simplex, direction))
+		{
+			model->add_collision();
+			aabb->add_collision();
 			return;
 		}
 	}

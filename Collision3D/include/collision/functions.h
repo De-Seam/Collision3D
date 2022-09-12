@@ -11,3 +11,5 @@ void detect_collision(AABBShape*, SphereShape*);
 void detect_collision(ModelShape*, ModelShape*);
 
 void detect_collision(ModelShape*, SphereShape*);
+
+void detect_collision(ModelShape*, AABBShape*);

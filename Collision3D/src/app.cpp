@@ -138,6 +138,11 @@ void App::detect_collisions()
 				detect_collision(static_cast<ModelShape*>(m_shapes[i]), static_cast<SphereShape*>(m_shapes[j]));
 			else if(type0 == ShapeType::Sphere && type1 == ShapeType::Model)
 				detect_collision(static_cast<ModelShape*>(m_shapes[j]), static_cast<SphereShape*>(m_shapes[i]));
+		
+			else if(type0 == ShapeType::Model && type1 == ShapeType::AABB)
+				detect_collision(static_cast<ModelShape*>(m_shapes[i]), static_cast<AABBShape*>(m_shapes[j]));
+			else if(type0 == ShapeType::AABB && type1 == ShapeType::Model)
+				detect_collision(static_cast<ModelShape*>(m_shapes[j]), static_cast<AABBShape*>(m_shapes[i]));
 		}
 	}
 }

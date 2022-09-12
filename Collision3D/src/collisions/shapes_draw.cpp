@@ -17,8 +17,7 @@ void SphereShape::draw()
 void AABBShape::draw()
 {
 	Color color = m_collision_count <= 0 ? g_collision_color_non : g_collision_color_hit;
-	DrawCubeWiresV(to_rl(m_position),
-		to_rl(m_size), color);
+	DrawCubeWiresV(to_rl(m_position), to_rl(m_size), color);
 }
 
 void ModelShape::draw()
