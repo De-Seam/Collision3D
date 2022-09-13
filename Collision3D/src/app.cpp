@@ -69,6 +69,7 @@ void App::main_loop()
 void App::update(float dt)
 {
 	printf("%f\n",dt);
+	m_dynamic_bvh.generate();
 
 	UpdateCamera(&m_camera);
 

@@ -30,6 +30,11 @@ void BVH::draw()
 
 void BVH::generate()
 {
+	if(m_indices)
+		_aligned_free(m_indices);
+
+	m_nodes.clear();
+
 	m_indices = static_cast<unsigned int*>(_aligned_malloc((static_cast<size_t>(m_shapes.size())+1)*4, 64));
 	for(size_t i = 0; i < m_shapes.size(); i++)
 		m_indices[i] = i;
@@ -57,10 +62,10 @@ void BVH::partition(BVHNode* node, int first, int count, int depth)
 	float best_split_cost = INFINITY;
 	size_t best_split_axis = 0;
 
-	int split_amount = 4;
+	int split_amount = 20;
 	if(count < split_amount)
 		split_amount = count;
-	float split_amount_flt = static_cast<float>(split_amount+1);
+	float split_amount_flt = static_cast<float>(split_amount);
 	float split_amount_inv_flt = 1.f / split_amount_flt;
 
 	for(size_t axis = 0; axis < 3; axis++)
