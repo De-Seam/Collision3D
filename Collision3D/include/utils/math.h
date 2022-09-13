@@ -403,7 +403,8 @@ namespace fm //Fast Math
 	{
 		float mag = std::sqrtf(i.x * i.x + i.y * i.y);
 		assert(mag != 0.f && "Try using normalize_safe instead");
-		return { i.x / mag, i.y / mag };
+		float inv = 1.f / mag;
+		return { i.x * inv, i.y * inv };
 	}
 
 
@@ -412,14 +413,42 @@ namespace fm //Fast Math
 		float mag = std::sqrtf(i.x * i.x + i.y * i.y);
 		if (mag == 0.f)
 			mag = 1.f;
-		return { i.x / mag, i.y / mag };
+		float inv = 1.f / mag;
+		return { i.x * inv, i.y * inv };
 	}
 
 	inline vec3 normalize(const vec3& i)
 	{
 		float mag = std::sqrtf(i.x * i.x + i.y * i.y + i.z * i.z);
 		assert(mag != 0.f && "Try using normalize_safe instead");
-		return { i.x / mag, i.y / mag, i.z / mag };
+		float inv = 1.f / mag;
+		return { i.x * inv, i.y * inv, i.z * inv };
+	}
+
+	inline vec3 normalize_safe(const vec3& i)
+	{
+		float mag = std::sqrtf(i.x * i.x + i.y * i.y + i.z * i.z);
+		if (mag == 0.f)
+			mag = 1.f;
+		float inv = 1.f / mag;
+		return { i.x * inv, i.y * inv, i.z * inv };
+	}
+
+	inline vec4 normalize(const vec4& i)
+	{
+		float mag = std::sqrtf(i.x * i.x + i.y * i.y + i.z * i.z);
+		assert(mag != 0.f && "Try using normalize_safe instead");
+		float inv = 1.f / mag;
+		return { i.x * inv, i.y * inv, i.z * inv, i.w * inv };
+	}
+
+	inline vec4 normalize_safe(const vec4& i)
+	{
+		float mag = std::sqrtf(i.x * i.x + i.y * i.y + i.z * i.z);
+		if (mag == 0.f)
+			mag = 1.f;
+		float inv = 1.f / mag;
+		return { i.x * inv, i.y * inv, i.z * inv, i.w * inv };
 	}
 
 	inline mat4 translate(mat4 matrix, vec3 vector)
@@ -445,25 +474,25 @@ namespace fm //Fast Math
 		vec3 axis(normalize(v));
 		vec3 temp(axis * (1.f - c));
 
-		mat4 Rotate;
-		Rotate[0][0] = c + temp[0] * axis[0];
-		Rotate[0][1] = temp[0] * axis[1] + s * axis[2];
-		Rotate[0][2] = temp[0] * axis[2] - s * axis[1];
+		mat4 temp_matrix;
+		temp_matrix[0][0] = c + temp[0] * axis[0];
+		temp_matrix[0][1] = temp[0] * axis[1] + s * axis[2];
+		temp_matrix[0][2] = temp[0] * axis[2] - s * axis[1];
 
-		Rotate[1][0] = temp[1] * axis[0] - s * axis[2];
-		Rotate[1][1] = c + temp[1] * axis[1];
-		Rotate[1][2] = temp[1] * axis[2] + s * axis[0];
+		temp_matrix[1][0] = temp[1] * axis[0] - s * axis[2];
+		temp_matrix[1][1] = c + temp[1] * axis[1];
+		temp_matrix[1][2] = temp[1] * axis[2] + s * axis[0];
 
-		Rotate[2][0] = temp[2] * axis[0] + s * axis[1];
-		Rotate[2][1] = temp[2] * axis[1] - s * axis[0];
-		Rotate[2][2] = c + temp[2] * axis[2];
+		temp_matrix[2][0] = temp[2] * axis[0] + s * axis[1];
+		temp_matrix[2][1] = temp[2] * axis[1] - s * axis[0];
+		temp_matrix[2][2] = c + temp[2] * axis[2];
 
-		mat4 Result;
-		Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
-		Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
-		Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
-		Result[3] = m[3];
-		return Result;
+		mat4 result;
+		result[0] = m[0] * temp_matrix[0][0] + m[1] * temp_matrix[0][1] + m[2] * temp_matrix[0][2];
+		result[1] = m[0] * temp_matrix[1][0] + m[1] * temp_matrix[1][1] + m[2] * temp_matrix[1][2];
+		result[2] = m[0] * temp_matrix[2][0] + m[1] * temp_matrix[2][1] + m[2] * temp_matrix[2][2];
+		result[3] = m[3];
+		return result;
 	}
 
 	inline mat4 get_perspective(float fovy, float aspect, float znear, float zfar)
@@ -472,13 +501,13 @@ namespace fm //Fast Math
 
 		float const tanHalfFovy = tan(fovy / 2.f);
 
-		mat4 Result(1.f);
-		Result[0][0] = 1.f / (aspect * tanHalfFovy);
-		Result[1][1] = 1.f / (tanHalfFovy);
-		Result[2][2] = -(zfar + znear) / (zfar - znear);
-		Result[2][3] = -1.f;
-		Result[3][2] = -2.f * zfar * znear / (zfar - znear);
-		return Result;
+		mat4 result(1.f);
+		result[0][0] = 1.f / (aspect * tanHalfFovy);
+		result[1][1] = 1.f / (tanHalfFovy);
+		result[2][2] = -(zfar + znear) / (zfar - znear);
+		result[2][3] = -1.f;
+		result[3][2] = -2.f * zfar * znear / (zfar - znear);
+		return result;
 	}
 
 	inline mat3 to_mat3(const quat& q)
