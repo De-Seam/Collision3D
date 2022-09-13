@@ -1,5 +1,6 @@
 #pragma once
 #include "collision/shapes.h"
+#include "collision/bvh.h"
 
 #include <raylib/raylib.h>
 
@@ -18,4 +19,6 @@ private:
 	static Camera3D m_camera;
 	static std::vector<Shape*> m_shapes;
 	static Shape* m_selected_shape;
+
+	static BVH m_dynamic_bvh;
 };

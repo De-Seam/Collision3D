@@ -24,7 +24,7 @@ void ModelShape::draw()
 {
 	fm::mat4 translation_matrix = fm::translate(fm::mat4{1.f}, m_position);
 	fm::mat4 scale_matrix = fm::scale(fm::mat4{1.f}, m_scale);
-	fm::mat4 rotate_matrix = fm::rotate(fm::mat4{1.f}, 0.f, m_rotation);
+	//fm::mat4 rotate_matrix = fm::rotate(fm::mat4{1.f}, 0.f, m_rotation);
 
 	fm::mat4 model_matrix = scale_matrix * translation_matrix;
 

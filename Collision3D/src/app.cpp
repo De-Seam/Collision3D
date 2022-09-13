@@ -1,5 +1,6 @@
 #include "app.h"
 #include "collision/functions.h"
+#include "collision/bvh.h"
 
 #include <raylib/rlgl.h>
 
@@ -10,6 +11,7 @@
 Camera3D App::m_camera = {0};
 std::vector<Shape*> App::m_shapes = {};
 Shape* App::m_selected_shape = nullptr;
+BVH App::m_dynamic_bvh = {};
 
 void App::init()
 {
@@ -30,7 +32,19 @@ void App::init()
 	m_shapes.push_back(new AABBShape({5.f,3.f,0.f}, {2.f, 2.f, 2.f}));
 
 	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{10.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
-	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{13.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
+	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{50.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
+
+	for(int i = 0; i < 10; i++)
+		m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{12.f + i,1.f + (rand()%10)*0.1f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
+
+	for(Shape* shape : m_shapes)
+	{
+		shape->calculate_aabb();
+
+		m_dynamic_bvh.add_shape(shape);
+	}
+
+	m_dynamic_bvh.generate();
 
 	main_loop();
 
@@ -54,6 +68,8 @@ void App::main_loop()
 
 void App::update(float dt)
 {
+	printf("%f\n",dt);
+
 	UpdateCamera(&m_camera);
 
 	BeginDrawing();
@@ -100,8 +116,11 @@ void App::update(float dt)
 
 			detect_collisions();
 
+			m_dynamic_bvh.draw();
+
 			for(Shape* shape : m_shapes)
 			{
+				shape->calculate_aabb();
 				shape->draw();
 				shape->reset_collisions();
 			}

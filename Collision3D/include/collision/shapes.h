@@ -14,6 +14,12 @@ namespace fm
 	struct AABB
 	{
 		fm::vec3 min, max;
+
+		float area()
+		{
+			fm::vec3 length = max - min;
+			return (2.0f * (length.x * length.y + length.y * length.z + length.z * length.x)); 
+		}
 	};
 }
 
@@ -34,9 +40,13 @@ struct Shape
 	void reset_collisions() {m_collision_count = 0;} //Called by app
 	ShapeType get_type() { return m_type; }
 
+	virtual void calculate_aabb() = 0;
+
 	fm::vec3 m_position;
 	int m_collision_count = 0;
 	ShapeType m_type = ShapeType::Invalid;
+
+	fm::AABB m_aabb;
 };
 
 struct SphereShape : public Shape
@@ -44,6 +54,11 @@ struct SphereShape : public Shape
 	SphereShape(fm::vec3 pos, float r) : m_radius(r) {m_position = pos; m_type = ShapeType::Sphere;}
 	virtual void draw() override;
 	virtual bool hits_ray(fm::Ray ray, float& max_distance) override;
+
+	virtual void calculate_aabb() override
+	{
+		m_aabb = {m_position - fm::vec3{m_radius}, m_position + fm::vec3{m_radius}};
+	}
 
 	float m_radius;
 };
@@ -60,10 +75,15 @@ struct AABBShape : public Shape
 	virtual void draw() override;
 	virtual bool hits_ray(fm::Ray ray, float& max_distance) override;
 
-	fm::AABB get_aabb()
+	virtual void calculate_aabb() override
 	{
 		fm::vec3 half_size = m_size * 0.5f;
-		return {m_position - half_size, m_position + half_size};
+		m_aabb = {m_position - half_size, m_position + half_size};
+	}
+
+	const fm::AABB& get_aabb()
+	{
+		return m_aabb;
 	}
 
 	fm::vec3 m_size;
@@ -83,6 +103,25 @@ struct ModelShape : public Shape
 
 	virtual void draw() override;
 	virtual bool hits_ray(fm::Ray ray, float& max_distance) override;
+
+	virtual void calculate_aabb() override
+	{
+		fm::vec3 min = {INFINITY};
+		fm::vec3 max = {-INFINITY};
+		for(int i = 0; i < m_model.meshes[0].vertexCount; i++)
+		{
+			min[i%3] = fm::min(m_model.meshes[0].vertices[i], min[i%3]);
+			max[i%3] = fm::max(m_model.meshes[0].vertices[i], max[i%3]);
+		}
+
+		min *= m_scale;
+		max *= m_scale;
+
+		min+=m_position;
+		max+=m_position;
+
+		m_aabb = {min,max};
+	}
 
 	Model m_model;
 	fm::vec3 m_scale;
