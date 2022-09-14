@@ -37,7 +37,7 @@ void BVH::generate()
 
 	m_indices = static_cast<unsigned int*>(_aligned_malloc((static_cast<size_t>(m_shapes.size())+1)*4, 64));
 	for(size_t i = 0; i < m_shapes.size(); i++)
-		m_indices[i] = i;
+		m_indices[i] = static_cast<unsigned int>(i);
 
 	m_nodes.reserve(m_shapes.size() * 2 + 1);
 	m_nodes.emplace_back(BVHNode()); //Root Node

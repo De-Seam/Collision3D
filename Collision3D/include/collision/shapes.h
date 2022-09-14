@@ -3,6 +3,8 @@
 
 #include <raylib/raylib.h>
 
+#include <array>
+
 namespace fm
 {
 	struct Ray
@@ -41,6 +43,7 @@ struct Shape
 	ShapeType get_type() { return m_type; }
 
 	virtual void calculate_aabb() = 0;
+	virtual fm::vec3 find_furthest_point(fm::vec3 direction) = 0;
 
 	fm::vec3 m_position;
 	int m_collision_count = 0;
@@ -58,6 +61,11 @@ struct SphereShape : public Shape
 	virtual void calculate_aabb() override
 	{
 		m_aabb = {m_position - fm::vec3{m_radius}, m_position + fm::vec3{m_radius}};
+	}
+
+	virtual fm::vec3 find_furthest_point(fm::vec3 direction) override
+	{
+		return m_position + fm::normalize(direction) * m_radius;
 	}
 
 	float m_radius;
@@ -84,6 +92,40 @@ struct AABBShape : public Shape
 	const fm::AABB& get_aabb()
 	{
 		return m_aabb;
+	}
+
+	virtual fm::vec3 find_furthest_point(fm::vec3 direction) override
+	{
+		fm::vec3 max_point;
+		float max_distance = -INFINITY;
+
+		fm::AABB aabb = m_aabb;
+		fm::vec3 size = aabb.max - aabb.min;
+
+		std::array<fm::vec3, 8> vertices
+		{
+			aabb.min, //0,0,0
+			aabb.min + fm::vec3{size.x, 0, 0}, //1,0,0
+			aabb.min + fm::vec3{size.x, 0, size.z}, //1,0,1
+			aabb.min + fm::vec3{0, 0, size.z}, //0,0,1
+			aabb.min + fm::vec3{0, size.y, size.z}, //0,1,1
+			aabb.max,//1,1,1
+			aabb.min + fm::vec3{size.x, size.y, 0}, //1,1,0
+			aabb.min + fm::vec3{0, size.y, 0}, //0,1,1
+		};
+
+		for(int i = 0; i < 8; i++)
+		{
+			fm::vec3 vertex = vertices[i];
+			float distance = vertex.dot(direction);
+			if(distance > max_distance)
+			{
+				max_distance = distance;
+				max_point = vertex;
+			}
+		}
+
+		return max_point;
 	}
 
 	fm::vec3 m_size;
@@ -121,6 +163,28 @@ struct ModelShape : public Shape
 		max+=m_position;
 
 		m_aabb = {min,max};
+	}
+
+	virtual fm::vec3 find_furthest_point(fm::vec3 direction) override
+	{
+		int vert_count = m_model.meshes[0].vertexCount;
+		fm::vec3 max_point;
+		float max_distance = -INFINITY;
+
+		for(int i = 0; i < vert_count; i+=3)
+		{
+			fm::vec3 vertex = {m_model.meshes[0].vertices[i], m_model.meshes[0].vertices[i+1], m_model.meshes[0].vertices[i+2]};
+			vertex *= m_scale;
+			vertex += m_position;
+			float distance = vertex.dot(direction);
+			if(distance > max_distance)
+			{
+				max_distance = distance;
+				max_point = vertex;
+			}
+		}
+
+		return max_point;
 	}
 
 	Model m_model;

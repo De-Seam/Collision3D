@@ -140,29 +140,11 @@ void App::detect_collisions()
 			ShapeType type0 = m_shapes[i]->get_type();
 			ShapeType type1 = m_shapes[j]->get_type();
 
-			if(type0 == ShapeType::Sphere && type1 == ShapeType::Sphere)
-				detect_collision(static_cast<SphereShape*>(m_shapes[i]), static_cast<SphereShape*>(m_shapes[j]));
-
-			else if(type0 == ShapeType::AABB && type1 == ShapeType::AABB)
-				detect_collision(static_cast<AABBShape*>(m_shapes[i]), static_cast<AABBShape*>(m_shapes[j]));
-
-			else if(type0 == ShapeType::AABB && type1 == ShapeType::Sphere)
-				detect_collision(static_cast<AABBShape*>(m_shapes[i]), static_cast<SphereShape*>(m_shapes[j]));
-			else if(type0 == ShapeType::Sphere && type1 == ShapeType::AABB)
-				detect_collision(static_cast<AABBShape*>(m_shapes[j]), static_cast<SphereShape*>(m_shapes[i]));
-			
-			else if(type0 == ShapeType::Model && type1 == ShapeType::Model)
-				detect_collision(static_cast<ModelShape*>(m_shapes[i]), static_cast<ModelShape*>(m_shapes[j]));
-
-			else if(type0 == ShapeType::Model && type1 == ShapeType::Sphere)
-				detect_collision(static_cast<ModelShape*>(m_shapes[i]), static_cast<SphereShape*>(m_shapes[j]));
-			else if(type0 == ShapeType::Sphere && type1 == ShapeType::Model)
-				detect_collision(static_cast<ModelShape*>(m_shapes[j]), static_cast<SphereShape*>(m_shapes[i]));
-		
-			else if(type0 == ShapeType::Model && type1 == ShapeType::AABB)
-				detect_collision(static_cast<ModelShape*>(m_shapes[i]), static_cast<AABBShape*>(m_shapes[j]));
-			else if(type0 == ShapeType::AABB && type1 == ShapeType::Model)
-				detect_collision(static_cast<ModelShape*>(m_shapes[j]), static_cast<AABBShape*>(m_shapes[i]));
+			if(colliding(m_shapes[i], m_shapes[j]))
+			{
+				m_shapes[i]->add_collision();
+				m_shapes[j]->add_collision();
+			}
 		}
 	}
 }

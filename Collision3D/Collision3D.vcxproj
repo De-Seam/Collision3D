@@ -98,6 +98,7 @@
     <ClCompile Include="src\collisions\bvh.cpp" />
     <ClCompile Include="src\collisions\functions\aabb_aabb.cpp" />
     <ClCompile Include="src\collisions\functions\aabb_sphere.cpp" />
+    <ClCompile Include="src\collisions\functions\gjk.cpp" />
     <ClCompile Include="src\collisions\functions\model_model.cpp" />
     <ClCompile Include="src\collisions\shapes_draw.cpp" />
     <ClCompile Include="src\collisions\functions\sphere_sphere.cpp" />
