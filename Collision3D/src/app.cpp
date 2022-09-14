@@ -34,8 +34,11 @@ void App::init()
 	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{10.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
 	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{50.f,1.f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
 
-	for(int i = 0; i < 10; i++)
-		m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{12.f + i,1.f + (rand()%10)*0.1f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
+	//for(int i = 0; i < 100; i++)
+	//	m_shapes.push_back(new ModelShape("assets/models/fox.gltf",{10.f + i,1.f + (rand()%10)*0.1f,0.f}, {0.02f, 0.02f, 0.02f}, {0.f,0.f,1.f}));
+
+	for(int i = 0; i < 1000; i++)
+		m_shapes.push_back(new SphereShape({10.f + i*2,1.f + (rand()%10)*0.1f,0.f}, 1.f));
 
 	for(Shape* shape : m_shapes)
 	{
@@ -53,6 +56,11 @@ void App::init()
 
 void App::main_loop()
 {
+	constexpr int time_checks = 16;
+	float time_checks_inv = 1 / static_cast<float>(time_checks);
+	float delta_time_list[time_checks] = {0};
+	int current_delta_time = 0;
+
 	float delta_time = 0.0001f;
 	while(!WindowShouldClose())
 	{
@@ -63,13 +71,21 @@ void App::main_loop()
 		auto end = std::chrono::steady_clock::now();
 		std::chrono::duration<float> elapsed_chrono_time = end - start;
 		delta_time = elapsed_chrono_time.count();
+		delta_time_list[current_delta_time] = delta_time;
+		current_delta_time++;
+		if(current_delta_time >= time_checks)
+			current_delta_time = 0;
+		float average_dt = 0.f;
+		for(size_t i = 0; i < time_checks; i++)
+			average_dt+=delta_time_list[i];
+		average_dt *= time_checks_inv;
+		printf("%f\n", average_dt);
 	}
 }
 
 void App::update(float dt)
 {
-	printf("%f\n",dt);
-	m_dynamic_bvh.generate();
+	//m_dynamic_bvh.generate();
 
 	UpdateCamera(&m_camera);
 
@@ -96,14 +112,18 @@ void App::update(float dt)
 
 		if(m_selected_shape)
 		{
+			float modifier = 1.f;
+			if(IsKeyDown(KEY_RIGHT_SHIFT) || IsKeyDown(KEY_LEFT_SHIFT))
+				modifier = 10.f;
+
 			if(IsKeyDown(KEY_UP))
-				m_selected_shape->m_position.y += dt;
+				m_selected_shape->m_position.y += dt * modifier;
 			if(IsKeyDown(KEY_DOWN))
-				m_selected_shape->m_position.y -= dt;
+				m_selected_shape->m_position.y -= dt * modifier;
 			if(IsKeyDown(KEY_LEFT))
-				m_selected_shape->m_position.x -= dt;
+				m_selected_shape->m_position.x -= dt * modifier;
 			if(IsKeyDown(KEY_RIGHT))
-				m_selected_shape->m_position.x += dt;
+				m_selected_shape->m_position.x += dt * modifier;
 		}
 
 		//draw_guizmo();
@@ -135,16 +155,37 @@ void App::detect_collisions()
 {
 	for(size_t i = 0; i < m_shapes.size(); i++)
 	{
-		for(size_t j = i+1; j < m_shapes.size(); j++)
+		m_dynamic_bvh.broadphase_collisions(m_shapes[i]->m_aabb, i);
+	}
+	
+	for(size_t i = 0; i < m_shapes.size(); i++)
+	{
+		std::vector<std::vector<Shape*>>& collision_manifold = m_dynamic_bvh.get_manifest();
+		for(Shape* shape : collision_manifold[i])
 		{
-			ShapeType type0 = m_shapes[i]->get_type();
-			ShapeType type1 = m_shapes[j]->get_type();
-
-			if(colliding(m_shapes[i], m_shapes[j]))
+			if(shape != m_shapes[i])
 			{
-				m_shapes[i]->add_collision();
-				m_shapes[j]->add_collision();
+				if(colliding(m_shapes[i], shape))
+				{
+					m_shapes[i]->add_collision();
+					shape->add_collision();
+				}
 			}
 		}
 	}
+
+	//for(size_t i = 0; i < m_shapes.size(); i++)
+	//{
+	//	for(size_t j = i+1; j < m_shapes.size(); j++)
+	//	{
+	//		ShapeType type0 = m_shapes[i]->get_type();
+	//		ShapeType type1 = m_shapes[j]->get_type();
+	//
+	//		if(colliding(m_shapes[i], m_shapes[j]))
+	//		{
+	//			m_shapes[i]->add_collision();
+	//			m_shapes[j]->add_collision();
+	//		}
+	//	}
+	//}
 }

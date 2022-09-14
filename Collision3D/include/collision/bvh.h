@@ -20,11 +20,17 @@ public:
 
 	void generate();
 
+	void broadphase_collisions(const fm::AABB& aabb, size_t id);
+
+	std::vector<std::vector<Shape*>>& get_manifest() { return m_collision_manifest; } 
 protected:
+	void collisions_internal(const fm::AABB& aabb, size_t id, size_t node);
 
 	unsigned int* m_indices = nullptr;
 	std::vector<BVHNode> m_nodes = {};
 	std::vector<Shape*> m_shapes = {};
+
+	std::vector<std::vector<Shape*>> m_collision_manifest = {};
 
 	virtual void subdivide(BVHNode* node, int first, int count, int depth);
 	virtual void partition(BVHNode* node, int first, int count, int depth);

@@ -65,7 +65,7 @@ struct SphereShape : public Shape
 
 	virtual fm::vec3 find_furthest_point(fm::vec3 direction) override
 	{
-		return m_position + fm::normalize(direction) * m_radius;
+		return m_position + fm::normalize_safe(direction) * m_radius;
 	}
 
 	float m_radius;

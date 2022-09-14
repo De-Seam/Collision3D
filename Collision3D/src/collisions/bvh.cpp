@@ -1,4 +1,5 @@
 #include "collision/bvh.h"
+#include "collision/functions.h"
 
 #include <raylib/raylib.h>
 
@@ -151,4 +152,31 @@ int BVH::split_indices(BVHNode* node, int first, int count, float split_location
 		}
 	}
 	return index;
+}
+
+
+void BVH::broadphase_collisions(const fm::AABB& aabb, size_t id)
+{
+	if(id+1 > m_collision_manifest.size())
+		m_collision_manifest.resize(id + 10);
+	collisions_internal(aabb, id, 0);
+}
+
+void BVH::collisions_internal(const fm::AABB& aabb, size_t id, size_t node_id)
+{
+	BVHNode* node = &m_nodes[node_id];
+	if(!collides(node->aabb, aabb))
+		return;
+	if(node->count != 0) //Leaf node
+	{
+		for(size_t i = 0; i < node->count; i++)
+		{
+			m_collision_manifest[id].emplace_back(m_shapes[m_indices[node->left_first+i]]);
+		}
+	}
+	else //Node
+	{
+		collisions_internal(aabb, id, node->left_first);
+		collisions_internal(aabb, id, node->left_first+1);
+	}
 }
